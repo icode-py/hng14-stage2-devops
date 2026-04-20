@@ -20,30 +20,33 @@ app = FastAPI()
 # Add CORS middleware (must be before routes)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For production this is for the exact frontend URL
+    allow_origins=["*"],  # For production, specify exact frontend URL
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
 
+
 @app.post("/jobs")
 def create_job():
     if redis_client is None:
         return {"error": "Redis unavailable"}
-    
+
     job_id = str(uuid.uuid4())
     redis_client.lpush("job", job_id)
     redis_client.hset(f"job:{job_id}", "status", "pending")
     return {"job_id": job_id}
 
+
 @app.get("/jobs/{job_id}")
 def get_job(job_id: str):
     if redis_client is None:
         return {"error": "Redis unavailable"}
-    
+
     status = redis_client.hget(f"job:{job_id}", "status")
     if not status:
         return {"error": "not found"}
