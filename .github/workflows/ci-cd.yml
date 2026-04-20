@@ -30,7 +30,7 @@ jobs:
       - name: Lint Dockerfiles (hadolint)
         uses: hadolint/hadolint-action@v3.1.0
         with:
-          dockerfile: "**/Dockerfile"
+          dockerfile: "api/Dockerfile,worker/Dockerfile,frontend/Dockerfile"
 
   test:
     runs-on: ubuntu-latest
