@@ -75,4 +75,3 @@ while not shutdown_flag:
         time.sleep(1)
 
 print("Worker shutdown complete")
-

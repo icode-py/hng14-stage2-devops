@@ -30,4 +30,3 @@ def test_get_job_status(mock_redis):
     response = client.get("/jobs/test-id")
     assert response.status_code == 200
     assert response.json()["status"] == "completed"
-    
