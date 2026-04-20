@@ -1,16 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Job Dashboard</title>
   <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
-    button { padding: 10px 20px; cursor: pointer; }
-    #result { margin-top: 20px; padding: 10px; background: #f4f4f4; border-radius: 4px; }
-    #jobs { margin-top: 20px; }
-    .job { padding: 8px; border-bottom: 1px solid #ddd; }
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f4f4f4;
+      border-radius: 4px;
+    }
+
+    #jobs {
+      margin-top: 20px;
+    }
+
+    .job {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .error {
+      color: red;
+    }
   </style>
 </head>
+
 <body>
   <h1>Job Processor Dashboard</h1>
   <button onclick="submitJob()">Submit New Job</button>
@@ -21,19 +49,33 @@
     const jobIds = [];
 
     async function submitJob() {
-      const res = await fetch('/submit', { method: 'POST' });
-      const data = await res.json();
-      document.getElementById('result').innerText = `Submitted: ${data.job_id}`;
-      jobIds.push(data.job_id);
-      pollJob(data.job_id);
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = 'Submitting...';
+
+      try {
+        const res = await fetch('/submit', { method: 'POST' });
+        if (!res.ok) throw new Error('API unavailable');
+        const data = await res.json();
+        resultDiv.innerText = `Submitted: ${data.job_id}`;
+        jobIds.push(data.job_id);
+        pollJob(data.job_id);
+      } catch (err) {
+        resultDiv.innerHTML = `<span class="error">Failed to submit job: ${err.message}</span>`;
+      }
     }
 
     async function pollJob(id) {
-      const res = await fetch(`/status/${id}`);
-      const data = await res.json();
-      renderJob(id, data.status);
-      if (data.status !== 'completed') {
-        setTimeout(() => pollJob(id), 2000);
+      try {
+        const res = await fetch(`/status/${id}`);
+        if (!res.ok) throw new Error('API unavailable');
+        const data = await res.json();
+        renderJob(id, data.status);
+        if (data.status !== 'completed') {
+          setTimeout(() => pollJob(id), 2000);
+        }
+      } catch (err) {
+        renderJob(id, 'error');
+        console.error(`Failed to poll job ${id}:`, err);
       }
     }
 
@@ -45,8 +87,13 @@
         el.id = id;
         document.getElementById('jobs').appendChild(el);
       }
-      el.innerText = `Job ${id.substring(0, 8)}... — ${status}`;
+      const shortId = id.substring(0, 8);
+      el.innerText = `Job ${shortId}... — ${status}`;
+      if (status === 'error') {
+        el.classList.add('error');
+      }
     }
   </script>
 </body>
+
 </html>
