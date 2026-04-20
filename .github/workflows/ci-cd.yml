@@ -159,6 +159,16 @@ jobs:
           done
           docker ps -a
 
+      - name: Show logs if services failed
+        if: always()
+        run: |
+          echo "=== Frontend Logs ==="
+          docker logs frontend || true
+          echo "=== Worker Logs ==="
+          docker logs worker || true
+          echo "=== API Logs ==="
+          docker logs api || true
+
       
       - name: Run integration test
         run: |
