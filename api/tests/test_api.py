@@ -7,17 +7,13 @@ import os
 # Add parent directory to path so we can import main
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-
-
 client = TestClient(app)
-
 
 def test_health_check():
     """Test the health check endpoint"""
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "healthy"}
-
 
 @patch('main.redis_client')
 def test_create_job(mock_redis):
@@ -28,7 +24,6 @@ def test_create_job(mock_redis):
     response = client.post("/jobs", json=job_data)
     assert response.status_code == 200
     assert "job_id" in response.json()
-
 
 @patch('main.redis_client')
 def test_get_job_status(mock_redis):
