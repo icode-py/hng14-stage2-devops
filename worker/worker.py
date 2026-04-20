@@ -2,7 +2,6 @@ import redis
 import time
 import os
 import signal
-import sys
 
 # Configuration from environment variables
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -12,15 +11,18 @@ QUEUE_NAME = os.getenv("QUEUE_NAME", "job")
 # Global flag for graceful shutdown
 shutdown_flag = False
 
+
 def signal_handler(signum, frame):
     """Handle SIGTERM and SIGINT for graceful shutdown"""
     global shutdown_flag
     print(f"Received signal {signum}, shutting down gracefully...")
     shutdown_flag = True
 
+
 # Register signal handlers
 signal.signal(signal.SIGTERM, signal_handler)
 signal.signal(signal.SIGINT, signal_handler)
+
 
 def connect_redis():
     """Connect to Redis with retry logic"""
