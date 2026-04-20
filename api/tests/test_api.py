@@ -2,7 +2,10 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch
 import sys
 import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Add parent directory to path so we can import main
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from main import app
 
 client = TestClient(app)
