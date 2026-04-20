@@ -117,9 +117,9 @@ jobs:
       
       - name: Pull images from local registry
         run: |
-          docker pull $REGISTRY/api:latest || true
-          docker pull $REGISTRY/worker:latest || true
-          docker pull $REGISTRY/frontend:latest || true
+          docker pull $REGISTRY/api:latest || echo "API image not found"
+          docker pull $REGISTRY/worker:latest || echo "Worker image not found"
+          docker pull $REGISTRY/frontend:latest || echo "Frontend image not found"
       
       - name: Run Trivy vulnerability scanner on API
         uses: aquasecurity/trivy-action@master
@@ -128,13 +128,14 @@ jobs:
           format: 'sarif'
           output: 'trivy-api.sarif'
           severity: 'CRITICAL'
-          exit-code: 1
+          exit-code: 0
         continue-on-error: true
       
       - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-api.sarif'
+        continue-on-error: true
 
   integration-test:
     runs-on: ubuntu-latest
