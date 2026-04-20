@@ -28,9 +28,11 @@ jobs:
           npx eslint app.js
       
       - name: Lint Dockerfiles (hadolint)
-        uses: hadolint/hadolint-action@v3.1.0
-        with:
-          dockerfile: "api/Dockerfile,worker/Dockerfile,frontend/Dockerfile"
+        run: |
+          docker pull hadolint/hadolint
+          docker run --rm -v $PWD:/workspace hadolint/hadolint hadolint /workspace/api/Dockerfile
+          docker run --rm -v $PWD:/workspace hadolint/hadolint hadolint /workspace/worker/Dockerfile
+          docker run --rm -v $PWD:/workspace hadolint/hadolint hadolint /workspace/frontend/Dockerfile
 
   test:
     runs-on: ubuntu-latest
