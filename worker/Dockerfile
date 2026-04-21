@@ -9,7 +9,7 @@ FROM python:3.11-slim
 # Install procps for pgrep command
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    procps \
+    procps=2:4.0.2-3 \
     && rm -rf /var/lib/apt/lists/*
 # Create non-root user
 RUN addgroup --gid 1002 --system appgroup && \
