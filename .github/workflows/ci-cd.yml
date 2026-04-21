@@ -141,7 +141,7 @@ jobs:
         run: |
           docker network create test-network
           docker run -d --name redis --network test-network redis:7-alpine
-          docker run -d --name api --network test-network -e REDIS_HOST=redis hng-api:test
+          docker run -d --name api --network test-network -p 8000:8000 -e REDIS_HOST=redis hng-api:test
           docker run -d --name worker --network test-network -e REDIS_HOST=redis hng-worker:test
           docker run -d --name frontend --network test-network -p 3000:3000 -e API_URL=http://api:8000 hng-frontend:test
       
@@ -178,6 +178,14 @@ jobs:
           
           JOB_ID=$(echo $JOB_RESPONSE | grep -o '"job_id":"[^"]*"' | cut -d'"' -f4)
           echo "Job ID: $JOB_ID"
+
+          # Check Redis queue
+          echo "=== Redis Queue Check ==="
+          docker exec redis redis-cli lrange job 0 -1 || true
+        
+          # Check worker logs
+          echo "=== Worker Logs During Test ==="
+          docker logs worker || true
           
           for i in {1..30}; do
             STATUS=$(curl -s http://localhost:8000/jobs/$JOB_ID | grep -o '"status":"[^"]*"' | cut -d'"' -f4)
@@ -188,6 +196,13 @@ jobs:
             fi
             sleep 2
           done
+
+          # Final debug logs
+          echo "=== Final Worker Logs ==="
+          docker logs worker || true
+          echo "=== Final Redis Queue ==="
+          docker exec redis redis-cli lrange job 0 -1 || true
+
           echo "❌ Job did not complete"
           exit 1
       
