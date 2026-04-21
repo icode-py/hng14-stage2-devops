@@ -3,23 +3,26 @@ set -e
 
 echo "🚀 Starting rolling update deployment..."
 
+# Use 'docker compose' (without hyphen) for newer Docker versions
+DOCKER_COMPOSE="docker compose"
+
 # Pull latest images
-docker-compose pull
+$DOCKER_COMPOSE pull
 
 # Update each service with health check verification
 for SERVICE in api worker frontend; do
     echo "Updating $SERVICE..."
     
     # Get current container ID
-    OLD_CONTAINER=$(docker-compose ps -q $SERVICE)
+    OLD_CONTAINER=$($DOCKER_COMPOSE ps -q $SERVICE)
     
     # Start new container
-    docker-compose up -d --no-deps --scale $SERVICE=2 --no-recreate $SERVICE
+    $DOCKER_COMPOSE up -d --no-deps --scale $SERVICE=2 --no-recreate $SERVICE
     
     # Wait for new container to be healthy
     echo "Waiting for new $SERVICE container to be healthy..."
     for i in {1..60}; do
-        NEW_CONTAINER=$(docker-compose ps -q $SERVICE | grep -v $OLD_CONTAINER | head -1)
+        NEW_CONTAINER=$($DOCKER_COMPOSE ps -q $SERVICE | grep -v $OLD_CONTAINER | head -1)
         HEALTH=$(docker inspect --format='{{.State.Health.Status}}' $NEW_CONTAINER 2>/dev/null || echo "starting")
         if [ "$HEALTH" = "healthy" ]; then
             echo "✅ New $SERVICE container is healthy"
@@ -41,7 +44,7 @@ for SERVICE in api worker frontend; do
     fi
     
     # Scale back to 1
-    docker-compose up -d --no-deps --scale $SERVICE=1 --no-recreate $SERVICE
+    $DOCKER_COMPOSE up -d --no-deps --scale $SERVICE=1 --no-recreate $SERVICE
     
     echo "✅ $SERVICE updated successfully"
 done
