@@ -6,10 +6,10 @@ RUN pip install --no-cache-dir --target=/install -r requirements.txt
 
 # Runtime stage
 FROM python:3.11-slim
-# Install procps for pgrep command with pinned versions and no-install-recommends
+# Install procps for pgrep command
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    procps=2:4.0.2-3 \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 # Create non-root user
 RUN addgroup --gid 1002 --system appgroup && \
